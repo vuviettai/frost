@@ -1,0 +1,57 @@
+[package]
+name = "frost-babyjubjub"
+edition.workspace = true
+rust-version.workspace = true
+version.workspace = true
+authors.workspace = true
+readme = "README.md"
+license.workspace = true
+repository.workspace = true
+categories.workspace = true
+keywords = ["cryptography", "crypto", "babyjubjub", "threshold", "signature"]
+description = "A Schnorr signature scheme over the Baby Jubjub curve that supports FROST."
+
+[package.metadata.docs.rs]
+features = ["serde"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+document-features.workspace = true
+frost-core.workspace = true
+frost-rerandomized.workspace = true
+rand_core.workspace = true
+sha2 = { version = "0.10.2", default-features = false }
+# babyjubjub-rs = "0.0.11"  # Removed, vendored instead
+
+[dev-dependencies]
+criterion.workspace = true
+frost-core = { workspace = true, features = ["test-impl"] }
+frost-rerandomized = { workspace = true, features = ["test-impl"] }
+insta.workspace = true
+hex.workspace = true
+lazy_static.workspace = true
+proptest.workspace = true
+rand.workspace = true
+rand_chacha.workspace = true
+serde_json.workspace = true
+
+[features]
+default = ["serialization", "cheater-detection"]
+#! ## Features
+## Enable `serde` support for types that need to be communicated. You
+## can use `serde` to serialize structs with any encoder that supports
+## `serde` (e.g. JSON with `serde_json`).
+serde = ["frost-core/serde"]
+## Enable a default serialization format. Enables `serde`.
+serialization = ["serde", "frost-core/serialization", "frost-rerandomized/serialization"]
+## Enable cheater detection
+cheater-detection = ["frost-core/cheater-detection", "frost-rerandomized/cheater-detection"]
+
+[lib]
+# Disables non-criterion benchmark which is not used; prevents errors
+# when using criterion-specific flags
+bench = false
+
+[[bench]]
+name = "bench"
+harness = false 
