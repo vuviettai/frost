@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 
+use ark_ed_on_bn254::Fq;
+use ark_ff::{Field, One, Zero};
 use frost_babyjubjub::*;
-use lazy_static::lazy_static;
-use serde_json::Value;
+use rand_core::RngCore;
 
 #[test]
 fn check_zero_key_fails() {
@@ -117,8 +118,6 @@ fn check_sign_with_incorrect_commitments() {
 #[test]
 fn test_babyjubjub_basic_signing() {
     let mut rng = rand::rngs::OsRng;
-
-    // Generate key shares
     let (shares, pubkeys) = keys::generate_with_dealer(
         3, // max_signers
         2, // min_signers
@@ -126,7 +125,6 @@ fn test_babyjubjub_basic_signing() {
         &mut rng,
     )
     .unwrap();
-
     // Create key packages
     let mut key_packages = BTreeMap::new();
     for (identifier, secret_share) in &shares {
@@ -152,9 +150,17 @@ fn test_babyjubjub_basic_signing() {
     let mut signature_shares = BTreeMap::new();
 
     for (identifier, key_package) in &key_packages {
-        let signature_share =
-            round2::sign(&signing_package, &nonces[identifier], key_package).unwrap();
-        signature_shares.insert(*identifier, signature_share);
+        println!(
+            "Signing with identifier: {:?}, key_package: {:?}",
+            identifier, key_package
+        );
+        let signature_share = round2::sign(&signing_package, &nonces[identifier], key_package);
+        match signature_share {
+            Ok(signature) => println!("Signature {:?}", signature),
+            Err(err) => println!("Error {:?}", err),
+        }
+        assert!(signature_share.is_ok());
+        signature_shares.insert(*identifier, signature_share.unwrap());
     }
 
     // Aggregate signature
@@ -170,10 +176,13 @@ fn test_babyjubjub_field_operations() {
     let mut rng = rand::rngs::OsRng;
 
     // Test field arithmetic
-    let a = BabyJubjubField::random(&mut rng);
-    let b = BabyJubjubField::random(&mut rng);
-    let zero = BabyJubjubField::zero();
-    let one = BabyJubjubField::one();
+    let mut rng_bytes = [0u8; 32];
+    rng.fill_bytes(&mut rng_bytes);
+    let a = Fq::from_random_bytes(&rng_bytes).unwrap_or(Fq::zero());
+    rng.fill_bytes(&mut rng_bytes);
+    let b = Fq::from_random_bytes(&rng_bytes).unwrap_or(Fq::zero());
+    let zero = Fq::zero();
+    let one = Fq::one();
 
     // Test addition
     let sum = a + b;
@@ -240,8 +249,8 @@ fn test_babyjubjub_point_operations() {
     let mut rng = rand::rngs::OsRng;
 
     // Test point arithmetic
-    let generator = BabyJubjubPoint::generator();
-    let identity = BabyJubjubPoint::identity();
+    let generator = BabyJubjubProjective::generator();
+    let identity = BabyJubjubProjective::identity();
 
     // Test identity
     assert_eq!(generator + identity, generator);

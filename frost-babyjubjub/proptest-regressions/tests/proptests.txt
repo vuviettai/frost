@@ -5,3 +5,5 @@
 # It is recommended to check this file in to source control so that
 # everyone who runs the test benefits from these saved cases.
 cc 691ff45d544b434f235587c5dd4c85b4ef705d4015b50145bef3a4018b6687b1 # shrinks to message = []
+cc 833ebca9cc132c3662ed6d84c0eccde33ba4ef2bd10dc0e3427249ed863c0ae5 # shrinks to max_signers = 3, min_signers = 2, message = []
+cc da4397d19ce9ecc5e04e3373cc50646057a4a9d555b64c34dd004c8cd7ef7a3e # shrinks to a = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0], b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

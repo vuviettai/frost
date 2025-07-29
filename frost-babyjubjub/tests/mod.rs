@@ -5,10 +5,10 @@ pub mod integration_tests;
 
 #[cfg(test)]
 mod unit_tests {
-    use std::collections::BTreeMap;
-
+    use ark_ed_on_bn254::Fq;
+    use ark_ff::Zero;
     use frost_babyjubjub::{
-        BabyJubjubField, BabyJubjubGroup, BabyJubjubPoint, BabyJubjubScalar, BabyJubjubScalarField,
+        BabyJubjubGroup, BabyJubjubProjective, BabyJubjubScalar, BabyJubjubScalarField,
         BabyJubjubSha256, Field, Group,
     };
     use frost_core::Ciphersuite;
@@ -19,8 +19,8 @@ mod unit_tests {
     fn test_basic_types() {
         // Test that basic types can be created and have expected properties
         let scalar = BabyJubjubScalar::zero();
-        let point = BabyJubjubPoint::identity();
-        let field = BabyJubjubField::zero();
+        let point = BabyJubjubProjective::identity();
+        let field = Fq::zero();
 
         assert!(scalar.is_zero());
         assert!(point.is_identity());
@@ -49,7 +49,7 @@ mod unit_tests {
 
     #[test]
     fn test_group_operations() {
-        let mut rng = OsRng;
+        //let rng = OsRng;
 
         // Test group identity
         let identity = BabyJubjubGroup::identity();

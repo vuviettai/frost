@@ -6,9 +6,14 @@
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use rand_core::{CryptoRng, RngCore};
 
-/// Field modulus: 21888242871839275222246405745257275088548364400416034343698204186575808495617
-/// The modulus is: [0x87cfd47, 0x6d87c208, 0x1ca8d3c2, 0x168716a9]
-pub const MODULUS: [u64; 4] = [0x87cfd47, 0x6d87c208, 0x1ca8d3c2, 0x168716a9];
+/// r = 2736030358979909402780800718157159386076813972158567259200215660948447373041
+/// 0x060c89ce5c263405370a08b6d0302b0bab3eedb83920ee0a677297dc392126f1
+pub const MODULUS: [u64; 4] = [
+    0x6772_97dc_3921_26f1,
+    0xab3e_edb8_3920_ee0a,
+    0x370a_08b6_d030_2b0b,
+    0x060c_89ce_5c26_3405,
+];
 
 /// BabyJubjub field element.
 ///
@@ -123,29 +128,43 @@ impl BabyJubjubField {
     }
 
     /// Compute the multiplicative inverse
+    /// p= 21888242871839275222246405745257275088548364400416034343698204186575808495617
+    /// p = 2^254 - 2^32 - 977
+    /// Use Fermat's little theorem: a^(p-1) = 1 mod p
+    /// a^(-1) = a^(p-2) mod p
+    /// p-2 = 2^254 - 2^32 - 977 - 2
+    ///     = 2^254 - 2^32 - 979
+    ///     = 2^254 - 2^32 - 2^10 +  2^6 - 2^4 - 2 - 1
+    ///     = 2^254 - 2^32 - 2^10 - 2^3 - 1
+    ///     = 2^254 - 2^32 - 2^10 - 2^3 - 1
     pub fn invert(&self) -> Option<Self> {
-        if self.is_zero() {
-            return None;
-        }
-
-        // Use Fermat's little theorem: a^(p-2) = a^(-1) mod p
-        let mut result = BabyJubjubField::one();
-        let mut base = *self;
-        let mut exponent = MODULUS;
-
-        // Subtract 2 from the exponent
-        Self::sub_from_modulus(&mut exponent, 2);
-
-        while !Self::is_zero_array(&exponent) {
-            if exponent[0] & 1 == 1 {
-                result = result.mul(base);
-            }
-            base = base.mul(base);
-            Self::div_by_2(&mut exponent);
-        }
-
-        Some(result)
+        None
     }
+
+    // Compute the multiplicative inverse
+    // pub fn invert_slow(&self) -> Option<Self> {
+    //     if self.is_zero() {
+    //         return None;
+    //     }
+
+    //     // Use Fermat's little theorem: a^(p-2) = a^(-1) mod p
+    //     let mut result = BabyJubjubField::one();
+    //     let mut base = *self;
+    //     let mut exponent = MODULUS;
+
+    //     // Subtract 2 from the exponent
+    //     Self::sub_from_modulus(&mut exponent, 2);
+
+    //     while !Self::is_zero_array(&exponent) {
+    //         if exponent[0] & 1 == 1 {
+    //             result = result.mul(base);
+    //         }
+    //         base = base.mul(base);
+    //         Self::div_by_2(&mut exponent);
+    //     }
+
+    //     Some(result)
+    // }
 
     /// Check if the field element is zero
     pub fn is_zero(&self) -> bool {

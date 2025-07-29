@@ -11,9 +11,11 @@ extern crate alloc;
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
 
+#[macro_use]
+mod util;
 mod babyjubjub;
 
-pub use babyjubjub::{BabyJubjubField, BabyJubjubPoint, BabyJubjubScalar};
+pub use babyjubjub::{BabyJubjubProjective, BabyJubjubScalar};
 use frost_rerandomized::RandomizedCiphersuite;
 use rand_core::{CryptoRng, RngCore};
 use sha2::{Digest, Sha256, Sha512};
@@ -53,11 +55,7 @@ impl Field for BabyJubjubScalarField {
     }
 
     fn invert(scalar: &Self::Scalar) -> Result<Self::Scalar, FieldError> {
-        if *scalar == <Self as Field>::zero() {
-            Err(FieldError::InvalidZeroScalar)
-        } else {
-            scalar.invert().map_err(|_| FieldError::InvalidZeroScalar)
-        }
+        scalar.invert()
     }
 
     fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self::Scalar {
@@ -87,20 +85,24 @@ pub struct BabyJubjubGroup;
 impl Group for BabyJubjubGroup {
     type Field = BabyJubjubScalarField;
 
-    type Element = BabyJubjubPoint;
+    type Element = BabyJubjubProjective;
 
     type Serialization = [u8; 32];
 
     fn cofactor() -> <Self::Field as Field>::Scalar {
+        // Note: BabyJubjub curve has a cofactor of 8, which makes it unsuitable
+        // for threshold signatures in its current form. This implementation is experimental.
+        // The curve order is 8 times the subgroup order, which causes issues with
+        // threshold signature schemes that expect a prime-order group.
         BabyJubjubScalar::one()
     }
 
     fn identity() -> Self::Element {
-        BabyJubjubPoint::identity()
+        BabyJubjubProjective::identity()
     }
 
     fn generator() -> Self::Element {
-        BabyJubjubPoint::generator()
+        BabyJubjubProjective::generator()
     }
 
     fn serialize(element: &Self::Element) -> Result<Self::Serialization, GroupError> {
@@ -111,7 +113,7 @@ impl Group for BabyJubjubGroup {
     }
 
     fn deserialize(buf: &Self::Serialization) -> Result<Self::Element, GroupError> {
-        match BabyJubjubPoint::from_bytes(buf) {
+        match BabyJubjubProjective::from_bytes(buf) {
             Some(point) => {
                 if point == Self::identity() {
                     Err(GroupError::InvalidIdentityElement)

@@ -20,7 +20,14 @@ document-features.workspace = true
 frost-core.workspace = true
 frost-rerandomized.workspace = true
 rand_core.workspace = true
+ff = { version = "0.13", default-features = false}
+group = { version = "0.13", default-features = false }
 sha2 = { version = "0.10.2", default-features = false }
+subtle = "2.6.1"
+ark-ec = "0.5"
+ark-ff = "0.5"
+ark-serialize = "0.5"
+ark-ed-on-bn254 = "0.5.0"
 # babyjubjub-rs = "0.0.11"  # Removed, vendored instead
 
 [dev-dependencies]

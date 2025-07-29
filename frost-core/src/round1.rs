@@ -48,10 +48,15 @@ where
     where
         R: CryptoRng + RngCore,
     {
-        let mut random_bytes = [0; 32];
-        rng.fill_bytes(&mut random_bytes[..]);
+        loop {
+            let mut random_bytes = [0; 32];
+            rng.fill_bytes(&mut random_bytes[..]);
 
-        Self::nonce_generate_from_random_bytes(secret, random_bytes)
+            let nonce = Self::nonce_generate_from_random_bytes(secret, random_bytes);
+            if nonce.to_scalar() != <<C::Group as Group>::Field>::zero() {
+                return nonce;
+            }
+        }
     }
 
     /// Create a nonce from a scalar.
